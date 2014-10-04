@@ -4,13 +4,6 @@ __author__ = "Jakub Franěk"
 from xml.etree.ElementTree import parse
 from itertools import combinations, product
 from collections import defaultdict
-from enum import Enum
-
-################################################################################
-
-class WordOrientation(Enum):
-    horizontal = 1
-    vertical = 2
 
 ################################################################################
 
@@ -23,6 +16,9 @@ class Model(object):
 
     ATTR_HORIZONTAL = 'horizontal'
     ATTR_VERTICAL = 'vertical'
+
+    ORIENTATION_HORIZONTAL = 'horizontal'
+    ORIENTATION_VERTICAL = 'vertical'
 
 ################################################################################
 ############################ model creation methods ############################
@@ -99,20 +95,20 @@ class Model(object):
             while isinstance(self.grid[i][j], list) \
               and not isinstance(self.grid[i][j], dict):
 
-                if orientation is WordOrientation.horizontal:
+                if orientation == self.ORIENTATION_HORIZONTAL:
                     # go to the left in  row until finding a clue
                     j -= 1
-                if orientation is WordOrientation.vertical:
+                if orientation == self.ORIENTATION_VERTICAL:
                     # go up in the column until finding a clue
                     i -= 1
 
             word = []
             while True:
 
-                if orientation is WordOrientation.horizontal:
+                if orientation == self.ORIENTATION_HORIZONTAL:
                     # go to the right in the row until going through the whole word
                     j += 1
-                if orientation is WordOrientation.vertical:
+                if orientation == self.ORIENTATION_VERTICAL:
                     # go down in the column until going through the whole word
                     i += 1
 
@@ -165,16 +161,16 @@ class Model(object):
             while isinstance(self.grid[i][j], list) \
               and not isinstance(self.grid[i][j], dict):
 
-                if orientation is WordOrientation.horizontal:
+                if orientation == self.ORIENTATION_HORIZONTAL:
                     # go to the left in the row until finding a clue
                     j -= 1
-                if orientation is WordOrientation.vertical:
+                if orientation == self.ORIENTATION_VERTICAL:
                     # go up in the column until finding a clue
                     i -= 1
 
-            if orientation is WordOrientation.horizontal:
+            if orientation == self.ORIENTATION_HORIZONTAL:
                 return int((self.grid[i][j])[self.ATTR_HORIZONTAL])
-            if orientation is WordOrientation.vertical:
+            if orientation == self.ORIENTATION_VERTICAL:
                 return int((self.grid[i][j])[self.ATTR_VERTICAL])
 
         except TypeError:
@@ -348,8 +344,8 @@ class Model(object):
             for j in range(self.width):
 
                 if isinstance(self.grid[i][j], list):
-                    self._applyRawHeuristicRule(i, j, WordOrientation.horizontal)
-                    self._applyRawHeuristicRule(i, j, WordOrientation.vertical)
+                    self._applyRawHeuristicRule(i, j, self.ORIENTATION_HORIZONTAL)
+                    self._applyRawHeuristicRule(i, j, self.ORIENTATION_VERTICAL)
 
 ################################################################################
 
@@ -373,12 +369,12 @@ class Model(object):
 
                 if isinstance(self.grid[i][j], list):
 
-                    if not self._isWordSolved(i, j, WordOrientation.horizontal):
-                        result = self._applySolutionsRule(i, j, WordOrientation.horizontal)
+                    if not self._isWordSolved(i, j, self.ORIENTATION_HORIZONTAL):
+                        result = self._applySolutionsRule(i, j, self.ORIENTATION_HORIZONTAL)
                         if result == True: modelChanged = True
 
-                    if not self._isWordSolved(i, j, WordOrientation.vertical):
-                        result = self._applySolutionsRule(i, j, WordOrientation.vertical)
+                    if not self._isWordSolved(i, j, self.ORIENTATION_VERTICAL):
+                        result = self._applySolutionsRule(i, j, self.ORIENTATION_VERTICAL)
                         if result == True: modelChanged = True
 
         return modelChanged
@@ -402,12 +398,12 @@ class Model(object):
 
                 if isinstance(self.grid[i][j], list):
 
-                    if not self._isWordSolved(i, j, WordOrientation.horizontal):
-                        result = self._applyDuplicatesRule(i, j, WordOrientation.horizontal)
+                    if not self._isWordSolved(i, j, self.ORIENTATION_HORIZONTAL):
+                        result = self._applyDuplicatesRule(i, j, self.ORIENTATION_HORIZONTAL)
                         if result == True: modelChanged = True
 
-                    if not self._isWordSolved(i, j, WordOrientation.vertical):
-                        result = self._applyDuplicatesRule(i, j, WordOrientation.vertical)
+                    if not self._isWordSolved(i, j, self.ORIENTATION_VERTICAL):
+                        result = self._applyDuplicatesRule(i, j, self.ORIENTATION_VERTICAL)
                         if result == True: modelChanged = True
 
         return modelChanged
