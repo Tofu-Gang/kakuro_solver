@@ -8,6 +8,7 @@
     <file>icons/6.png</file>
     <file>icons/7.png</file>
     <file>icons/8.png</file>
+    <file>icons/open.png</file>
     <file>icons/solve.png</file>
 </qresource>
 </RCC>

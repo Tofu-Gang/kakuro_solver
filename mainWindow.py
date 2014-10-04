@@ -29,10 +29,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.view)
         self.model = None
 
-        self.loadAction \
-            = QAction(self.style().standardIcon(QStyle.SP_DirOpenIcon),
-                      'Load file', self)
-        self.loadAction.triggered.connect(self._loadFromXml)
+        self.openAction \
+            = QAction(QIcon(':/icons/open.png'), 'Open file', self)
+        self.openAction.triggered.connect(self._loadFromXml)
         self.solveAction \
             = QAction(QIcon(':/icons/solve.png'), 'Solve automatically', self)
         self.solveAction.triggered.connect(self._solve)
@@ -56,7 +55,7 @@ class MainWindow(QMainWindow):
 
         self.toolBar = QToolBar('toolbar', self)
         self.addToolBar(self.toolBar)
-        self.toolBar.addAction(self.loadAction)
+        self.toolBar.addAction(self.openAction)
         self.toolBar.addAction(self.solveAction)
         self.toolBar.addAction(self.rawHeuristicAction)
         self.toolBar.addAction(self.contextSolutionsHeuristicAction)
