@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
 __author__ = "Jakub Franěk"
 
-from xml.etree.ElementTree import parse
 from itertools import combinations, product
 from collections import defaultdict
 
 ################################################################################
 
 class Model(object):
-    TAG_KAKURO = 'kakuro'
-    TAG_ROW = 'row'
-    TAG_FILLER = 'filler'
-    TAG_CLUE = 'clue'
-    TAG_LETTER = 'letter'
-
-    ATTR_HORIZONTAL = 'horizontal'
-    ATTR_VERTICAL = 'vertical'
-
-    ORIENTATION_HORIZONTAL = 'horizontal'
-    ORIENTATION_VERTICAL = 'vertical'
+    EMPTY = 'E'
+    LETTER = 'L'
+    TOKENS_DELIMITER = ';'
+    CLUES_DELIMITER = '-'
+    HORIZONTAL = 'H'
+    VERTICAL = 'V'
 
 ################################################################################
 ############################ model creation methods ############################
@@ -32,46 +26,81 @@ class Model(object):
         self.grid = []
         self.width = None
         self.height = None
-        self._loadFromXml(fileName)
+        self._loadFromFile(fileName)
 
 ################################################################################
 
-    def _loadFromXml(self, fileName):
+    def _loadFromFile(self, fileName):
         """
-        Loads puzzle model from xml file.
+        Loads puzzle model from a text file.
         """
 
-        kakuroFile = open(fileName, 'r')
-        tree = parse(fileName)
-        kakuro = tree.getroot()
+        with open(fileName, 'r') as f:
+            lines = f.read().split()
+            self.height = len(lines)
 
-        if kakuro.tag == self.TAG_KAKURO:
-            self.height = len(kakuro)
+            for line in lines:
+                tokens = line.split(self.TOKENS_DELIMITER)
+                modelRow = []
 
-            for row in kakuro:
-                if row.tag == self.TAG_ROW:
+                for token in tokens:
+                    if token == self.EMPTY:
+                        modelRow.append(None)
+                    elif token == self.LETTER:
+                        modelRow.append([number for number in range(1, 10)])
+                    else:
+                        clueTokens = token.split(self.CLUES_DELIMITER)
+                        if len(clueTokens) != 2:
+                            # TODO: error handling
+                            pass
 
-                    if self.width is None:
-                        self.width = len(row)
-                    if self.width is not None and self.width != len(row):
-                        # TODO: parse error, rows not equally long
-                        pass
-                    modelRow = []
+                        horizontalClue = None
+                        verticalClue = None
+                        clueToken1 = clueTokens[0]
+                        if clueToken1.__contains__(self.VERTICAL):
+                            try:
+                                verticalClue = int(clueToken1.lstrip(self.VERTICAL))
+                            except ValueError:
+                                pass
+                        elif clueToken1.__contains__(self.HORIZONTAL):
+                            try:
+                                horizontalClue = int(clueToken1.lstrip(self.HORIZONTAL))
+                            except ValueError:
+                                pass
+                        else:
+                            # TODO: error handling
+                            pass
 
-                    for element in row:
-                        if element.tag == self.TAG_FILLER:
-                            modelRow.append(None)
-                        if element.tag == self.TAG_CLUE:
-                            horizontal = element.attrib.get(self.ATTR_HORIZONTAL)
-                            vertical = element.attrib.get(self.ATTR_VERTICAL)
-                            modelRow.append({self.ATTR_HORIZONTAL: horizontal,
-                                             self.ATTR_VERTICAL: vertical})
-                        if element.tag == self.TAG_LETTER:
-                            modelRow.append([number for number in range(1, 10)])
+                        clueToken2 = clueTokens[1]
+                        if clueToken2.__contains__(self.VERTICAL):
+                            try:
+                                verticalClue = int(clueToken2.lstrip(self.VERTICAL))
+                            except ValueError:
+                                pass
+                        elif clueToken2.__contains__(self.HORIZONTAL):
+                            try:
+                                horizontalClue = int(clueToken2.lstrip(self.HORIZONTAL))
+                            except ValueError:
+                                pass
+                        else:
+                            # TODO: error handling
+                            pass
 
-                    self.grid.append(modelRow)
+                        modelRow.append({
+                            self.HORIZONTAL: horizontalClue,
+                            self.VERTICAL: verticalClue
+                        })
+                if self.width is None:
+                    self.width = len(modelRow)
+                elif len(modelRow) != self.width:
+                    # TODO: error handling
+                    pass
+                self.grid.append(modelRow)
 
-        kakuroFile.close()
+
+################################################################################
+
+
 
 ################################################################################
 ############################## model info methods ##############################
@@ -95,20 +124,20 @@ class Model(object):
             while isinstance(self.grid[i][j], list) \
               and not isinstance(self.grid[i][j], dict):
 
-                if orientation == self.ORIENTATION_HORIZONTAL:
+                if orientation == self.HORIZONTAL:
                     # go to the left in  row until finding a clue
                     j -= 1
-                if orientation == self.ORIENTATION_VERTICAL:
+                if orientation == self.VERTICAL:
                     # go up in the column until finding a clue
                     i -= 1
 
             word = []
             while True:
 
-                if orientation == self.ORIENTATION_HORIZONTAL:
+                if orientation == self.HORIZONTAL:
                     # go to the right in the row until going through the whole word
                     j += 1
-                if orientation == self.ORIENTATION_VERTICAL:
+                if orientation == self.VERTICAL:
                     # go down in the column until going through the whole word
                     i += 1
 
@@ -161,17 +190,17 @@ class Model(object):
             while isinstance(self.grid[i][j], list) \
               and not isinstance(self.grid[i][j], dict):
 
-                if orientation == self.ORIENTATION_HORIZONTAL:
+                if orientation == self.HORIZONTAL:
                     # go to the left in the row until finding a clue
                     j -= 1
-                if orientation == self.ORIENTATION_VERTICAL:
+                if orientation == self.VERTICAL:
                     # go up in the column until finding a clue
                     i -= 1
 
-            if orientation == self.ORIENTATION_HORIZONTAL:
-                return int((self.grid[i][j])[self.ATTR_HORIZONTAL])
-            if orientation == self.ORIENTATION_VERTICAL:
-                return int((self.grid[i][j])[self.ATTR_VERTICAL])
+            if orientation == self.HORIZONTAL:
+                return int((self.grid[i][j])[self.HORIZONTAL])
+            if orientation == self.VERTICAL:
+                return int((self.grid[i][j])[self.VERTICAL])
 
         except TypeError:
             return None
@@ -344,8 +373,8 @@ class Model(object):
             for j in range(self.width):
 
                 if isinstance(self.grid[i][j], list):
-                    self._applyRawHeuristicRule(i, j, self.ORIENTATION_HORIZONTAL)
-                    self._applyRawHeuristicRule(i, j, self.ORIENTATION_VERTICAL)
+                    self._applyRawHeuristicRule(i, j, self.HORIZONTAL)
+                    self._applyRawHeuristicRule(i, j, self.VERTICAL)
 
 ################################################################################
 
@@ -369,12 +398,12 @@ class Model(object):
 
                 if isinstance(self.grid[i][j], list):
 
-                    if not self._isWordSolved(i, j, self.ORIENTATION_HORIZONTAL):
-                        result = self._applySolutionsRule(i, j, self.ORIENTATION_HORIZONTAL)
+                    if not self._isWordSolved(i, j, self.HORIZONTAL):
+                        result = self._applySolutionsRule(i, j, self.HORIZONTAL)
                         if result == True: modelChanged = True
 
-                    if not self._isWordSolved(i, j, self.ORIENTATION_VERTICAL):
-                        result = self._applySolutionsRule(i, j, self.ORIENTATION_VERTICAL)
+                    if not self._isWordSolved(i, j, self.VERTICAL):
+                        result = self._applySolutionsRule(i, j, self.VERTICAL)
                         if result == True: modelChanged = True
 
         return modelChanged
@@ -398,12 +427,12 @@ class Model(object):
 
                 if isinstance(self.grid[i][j], list):
 
-                    if not self._isWordSolved(i, j, self.ORIENTATION_HORIZONTAL):
-                        result = self._applyDuplicatesRule(i, j, self.ORIENTATION_HORIZONTAL)
+                    if not self._isWordSolved(i, j, self.HORIZONTAL):
+                        result = self._applyDuplicatesRule(i, j, self.HORIZONTAL)
                         if result == True: modelChanged = True
 
-                    if not self._isWordSolved(i, j, self.ORIENTATION_VERTICAL):
-                        result = self._applyDuplicatesRule(i, j, self.ORIENTATION_VERTICAL)
+                    if not self._isWordSolved(i, j, self.VERTICAL):
+                        result = self._applyDuplicatesRule(i, j, self.VERTICAL)
                         if result == True: modelChanged = True
 
         return modelChanged

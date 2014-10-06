@@ -3,8 +3,8 @@ __author__ = "Jakub Franěk"
 
 from PySide.QtCore import Qt
 from PySide.QtGui import QMainWindow, QGraphicsScene, QGraphicsView, QPen, \
-    QBrush, QToolBar, QAction, QStyle, QFileDialog, \
-    QGraphicsTextItem, QIcon
+    QBrush, QToolBar, QAction, QFileDialog, QGraphicsTextItem, QIcon, \
+    QKeySequence
 from model import Model
 import ressources_rc
 
@@ -31,7 +31,8 @@ class MainWindow(QMainWindow):
 
         self.openAction \
             = QAction(QIcon(':/icons/open.png'), 'Open file', self)
-        self.openAction.triggered.connect(self._loadFromXml)
+        self.openAction.setShortcut(QKeySequence.Open)
+        self.openAction.triggered.connect(self._loadFromFile)
         self.solveAction \
             = QAction(QIcon(':/icons/solve.png'), 'Solve automatically', self)
         self.solveAction.triggered.connect(self._solve)
@@ -63,14 +64,13 @@ class MainWindow(QMainWindow):
 
 ################################################################################
 
-    def _loadFromXml(self):
+    def _loadFromFile(self):
         """
         It opens a dialog to load a xml file, which is then parsed and shown
         in the main window.
         """
 
-        fileName = QFileDialog.getOpenFileName(self, 'Open file', '.',
-                                               'Xml files (*.xml)')[0]
+        fileName = QFileDialog.getOpenFileName(self, 'Open file', '.')[0]
         # continue only if some file was really loaded
         if len(fileName) > 0:
             self.model = Model(fileName)
@@ -134,8 +134,8 @@ class MainWindow(QMainWindow):
 
         hTextItem = QGraphicsTextItem('')
         vTextItem = QGraphicsTextItem('')
-        horizontal = (self.model.grid[i][j])[self.model.ATTR_HORIZONTAL]
-        vertical = (self.model.grid[i][j])[self.model.ATTR_VERTICAL]
+        horizontal = (self.model.grid[i][j])[self.model.HORIZONTAL]
+        vertical = (self.model.grid[i][j])[self.model.VERTICAL]
 
         if horizontal is not None:
             hTextItem.setPlainText(str(horizontal))
