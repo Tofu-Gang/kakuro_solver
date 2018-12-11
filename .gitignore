@@ -1,4 +1,5 @@
-*.pyc
-*.xml
-*.pdf
-*.txt
+__pycache__/
+
+puzzles/
+res/
+sokoban_rc.py

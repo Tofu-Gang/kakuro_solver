@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
-__author__ = "Jakub Franěk"
+__author__ = "Tofu Gang"
 
-from PySide.QtCore import Qt
-from PySide.QtGui import QMainWindow, QGraphicsScene, QGraphicsView, QPen, \
-    QBrush, QToolBar, QAction, QFileDialog, QGraphicsTextItem, QIcon, \
-    QKeySequence
-from model import Model
-import ressources_rc
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsView, QToolBar, QAction, QFileDialog, QGraphicsTextItem
+from PyQt5.QtGui import QPen, QBrush, QIcon, QKeySequence
+from src.model import Model
+import res.resources_rc
 
-################################################################################
-############################### MainWindow class ###############################
+
+
 ################################################################################
 
 class MainWindow(QMainWindow):
@@ -70,7 +68,7 @@ class MainWindow(QMainWindow):
         in the main window.
         """
 
-        fileName = QFileDialog.getOpenFileName(self, 'Open file', '.')[0]
+        fileName = QFileDialog.getOpenFileName(self, 'Open file', '../puzzles/')[0]
         # continue only if some file was really loaded
         if len(fileName) > 0:
             self.model = Model(fileName)
